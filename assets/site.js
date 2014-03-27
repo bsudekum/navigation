@@ -21,7 +21,7 @@ $(function () {
         tileLayer: {
             detectRetina: true
         }
-    });
+    }); 
 
     var route = L.layerGroup();
     var allMarkers = L.layerGroup();
