@@ -9,19 +9,19 @@ $(function () {
         $('.alert-box').slideToggle();
     });
 
-    $('.stop').click(function(e){
-    	e.preventDefault();
-    	route.clearLayers(map);
+    $('.stop').click(function (e) {
+        e.preventDefault();
+        route.clearLayers(map);
         currentRoute = null;
-    	$('.alert-box').slideUp();
-    	$('.stop, .toggle').fadeOut();
-    })
+        $('.alert-box').slideUp();
+        $('.stop, .toggle').fadeOut();
+    });
 
     var map = L.mapbox.map('map', 'aj.n6sl9ilg', {
         tileLayer: {
             detectRetina: true
         }
-    }); 
+    });
 
     var route = L.layerGroup();
     var allMarkers = L.layerGroup();
@@ -130,24 +130,25 @@ $(function () {
             }
         });
     }
+    $('.alert-box').slideUp();
 
     function followUserAndRoute(route) {
-    	console.log(route)
-    	var from = L.latLng(route.routes[0].geometry.coordinates[section][1], route.routes[0].geometry.coordinates[section][0]);
-    	var distance = from.distanceTo(locationMarker.getLayers()[0].getLatLng());
-    	console.log(distance)
-    	if(distance < 30) {
-    		section++
-    		showDirectionAlert(route.routes[0].steps[section].maneuver.instruction)
-    		console.log(section)
-    	} else {
-    		console.log(section)
-    	}
+        console.log(route)
+        var from = L.latLng(route.routes[0].geometry.coordinates[section][1], route.routes[0].geometry.coordinates[section][0]);
+        var distance = from.distanceTo(locationMarker.getLayers()[0].getLatLng());
+        console.log(distance)
+        if (distance < 51) {
+            section++
+            showDirectionAlert(route.routes[0].steps[section].maneuver.instruction)
+            console.log(section)
+        } else {
+            console.log(section)
+        }
     }
 
     function showDirectionAlert(text) {
-    	$('.alert-box .action').html(text);
-    	$('.alert-box').slideDown();
+        $('.alert-box .action').html(text);
+        $('.alert-box').slideDown();
     }
 
     function checkUserComparedToRoute(route) {
@@ -159,9 +160,10 @@ $(function () {
                 minDistance.push(userDistance);
             }
         }
-        if (getMaxOfArray(minDistance) > 50) {
-            $('body').append('<iframe src="https://translate.google.com/translate_tts?ie=utf-8&tl=en&q=Recalculating" frameborder="0" style="display:none"></iframe>');
+        if (getMaxOfArray(minDistance) > 200) {
+            alert('Recalculating')
             getDirections(locationMarker.getLayers()[0].getLatLng().lng, locationMarker.getLayers()[0].getLatLng().lat, lastPressed.latlng.lng, lastPressed.latlng.lat, false);
+            $('body').append('<iframe src="https://translate.google.com/translate_tts?ie=utf-8&tl=en&q=Recalculating" frameborder="0" style="display:none"></iframe>');
             section = 0;
         } else {
             console.log('User is within 200 meters of route')
