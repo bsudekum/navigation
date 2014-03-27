@@ -1,0 +1,57 @@
+body {
+    margin:0;
+    padding:0;
+}
+#map {
+    position:absolute;
+    top:0;
+    bottom:0;
+    width:100%;
+}
+#map .icon.menu, #map .icon.x {
+    position: absolute;
+    z-index: 1001;
+    right: 10px;
+    top:10px;
+    display: none;
+}
+#map .icon.x {
+	top:60px;
+}
+
+.route {
+    position: fixed;
+    height: 100%;
+    width: 100%;
+    background: rgba(255, 255, 255, 0.89);
+    z-index: 1000;
+    display: none;
+    overflow-y:scroll;
+}
+.route .list li {
+    width: 100%;
+    border-top: 1px solid rgba(53, 53, 53, 0.31);
+}
+.alert-box{
+	position: absolute;
+	z-index: 1000;
+	width: 100%;
+	display: none;
+}
+
+.location-icon {
+    background-color: #56b881;
+    border-radius: 30px;
+    animation: dotPulse 2000ms 0ms infinite;
+    -moz-animation: dotPulse 2000ms 0ms infinite;
+    -webkit-animation: dotPulse 2000ms 0ms infinite;
+    border: 4px solid white;
+}
+@-webkit-keyframes dotPulse {
+    0% {
+        box-shadow:white 0px 0px 10px 2px, rgba(103, 184, 103, 1) 0px 0px 10px -5px;
+    }
+    100% {
+        box-shadow:white 0px 0px 10px 0px, rgba(103, 184, 103, 0) 0px 0px 0px 35px;
+    }
+}
