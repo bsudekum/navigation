@@ -24,8 +24,8 @@ $(function () {
     });
 
     var route = L.layerGroup();
-    var allMarkers = L.layerGroup();
     var locationMarker = L.layerGroup();
+    var circleMarkers = L.layerGroup();
     var lastPressed;
     var currentRoute;
     var section = 0;
@@ -82,6 +82,7 @@ $(function () {
                 if (e.error) alert(e.error);
 
                 route.clearLayers(map);
+                circleMarkers.clearLayers(map);
                 var line = [];
                 currentRoute = e;
                 var summary = e.routes[0].summary;
@@ -110,6 +111,7 @@ $(function () {
                 $('.route .summary').append(duration);
 
                 for (var i = 0; i < e.routes[0].geometry.coordinates.length; i++) {
+                	L.circle([e.routes[0].geometry.coordinates[i][1], e.routes[0].geometry.coordinates[i][0]],51).addTo(circleMarkers);
                     line.push([e.routes[0].geometry.coordinates[i][1], e.routes[0].geometry.coordinates[i][0]]);
                     if (e.routes[0].geometry.coordinates.length - 1 == i) {
                         var polyline_options = {
@@ -119,6 +121,7 @@ $(function () {
                         };
                         var polyline = L.polyline(line, polyline_options).addTo(route);
                         map.addLayer(route);
+                        map.addLayer(circleMarkers);
 
                         if (showMapView == true) {
                             map.fitBounds(line, {
@@ -161,7 +164,7 @@ $(function () {
             }
         }
         if (getMaxOfArray(minDistance) > 200) {
-            alert('Recalculating')
+            console.log('Recalculating');
             getDirections(locationMarker.getLayers()[0].getLatLng().lng, locationMarker.getLayers()[0].getLatLng().lat, lastPressed.latlng.lng, lastPressed.latlng.lat, false);
             $('body').append('<iframe src="https://translate.google.com/translate_tts?ie=utf-8&tl=en&q=Recalculating" frameborder="0" style="display:none"></iframe>');
             section = 0;
