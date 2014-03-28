@@ -19,9 +19,9 @@ $(function () {
     });
 
     var map = L.mapbox.map('map', 'aj.n6sl9ilg', {
-        // tileLayer: {
-        //     detectRetina: true
-        // }
+        tileLayer: {
+            detectRetina: true
+        }
     });
 
     var route = L.layerGroup();
