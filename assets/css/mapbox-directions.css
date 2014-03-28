@@ -34,7 +34,7 @@
 /* icons */
  
 .mapbox-directions-icon {
-    background-image: url('mapbox.directions.png');
+    background-image: url('../image/mapbox.directions.png');
     -webkit-background-size: 280px 20px;
     background-size: 280px 20px;
     background-repeat: no-repeat;

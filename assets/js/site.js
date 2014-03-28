@@ -12,15 +12,16 @@ $(function () {
     $('.stop').click(function (e) {
         e.preventDefault();
         route.clearLayers(map);
+        circleMarkers.clearLayers(map);
         currentRoute = null;
         $('.alert-box').slideUp();
-        $('.stop, .toggle').fadeOut();
+        $('.stop, .toggle, .route').fadeOut();
     });
 
     var map = L.mapbox.map('map', 'aj.n6sl9ilg', {
-        tileLayer: {
-            detectRetina: true
-        }
+        // tileLayer: {
+        //     detectRetina: true
+        // }
     });
 
     var route = L.layerGroup();
@@ -51,17 +52,10 @@ $(function () {
     });
 
     map.on('locationerror', function (e) {
-        console.log('Error: ' + r)
-    });
-
-    map.on('move', function (e) {
-        map.locate({
-            setView: false
-        });
+        console.log('Error: ' + JSON.stringify(e))
     });
 
     map.locate({
-        setView: true,
         maxZoom: 19,
         enableHighAccuracy: true,
         watch: true
@@ -89,9 +83,10 @@ $(function () {
                 var duration = (e.routes[0].distance * 0.000621371).toFixed(2) + ' miles and ' + Math.round(e.routes[0].duration * 1.3 / 60) + ' minutes';
                 $('.route .list, .route .summary, .route .title').empty();
                 $('.toggle, .stop').fadeIn();
-                showDirectionAlert(e.routes[0].steps[0].maneuver.instruction)
 
                 for (var i = 0; i < e.routes[0].steps.length; i++) {
+                    L.circle([e.routes[0].steps[i].maneuver.location.coordinates[1], e.routes[0].steps[i].maneuver.location.coordinates[0]], 51).addTo(circleMarkers);
+
                     if (e.routes[0].steps[i].maneuver.type.split(' ')[1]) {
                         var icon = e.routes[0].steps[i].maneuver.type.split(' ')[1];
                     } else {
@@ -107,11 +102,11 @@ $(function () {
 
                     $('.route .list').append(instruct);
                 }
+                map.addLayer(circleMarkers);
                 $('.route .title').append(summary);
                 $('.route .summary').append(duration);
 
                 for (var i = 0; i < e.routes[0].geometry.coordinates.length; i++) {
-                	L.circle([e.routes[0].geometry.coordinates[i][1], e.routes[0].geometry.coordinates[i][0]],51).addTo(circleMarkers);
                     line.push([e.routes[0].geometry.coordinates[i][1], e.routes[0].geometry.coordinates[i][0]]);
                     if (e.routes[0].geometry.coordinates.length - 1 == i) {
                         var polyline_options = {
@@ -121,11 +116,10 @@ $(function () {
                         };
                         var polyline = L.polyline(line, polyline_options).addTo(route);
                         map.addLayer(route);
-                        map.addLayer(circleMarkers);
 
                         if (showMapView == true) {
                             map.fitBounds(line, {
-                                padding: [50, 10]
+                                padding: [200, 100]
                             });
                         }
                     }
@@ -133,29 +127,42 @@ $(function () {
             }
         });
     }
-    $('.alert-box').slideUp();
 
     function followUserAndRoute(route) {
         console.log(route)
-        var from = L.latLng(route.routes[0].geometry.coordinates[section][1], route.routes[0].geometry.coordinates[section][0]);
+
+        var from = L.latLng(route.routes[0].steps[section].maneuver.location.coordinates[1], route.routes[0].steps[section].maneuver.location.coordinates[0]);
         var distance = from.distanceTo(locationMarker.getLayers()[0].getLatLng());
-        console.log(distance)
-        if (distance < 51) {
-            section++
-            showDirectionAlert(route.routes[0].steps[section].maneuver.instruction)
-            console.log(section)
+        showDirectionAlert((distance), route.routes[0].steps[section].maneuver.instruction);
+
+        if(section > 0){
+            var distanceToStep = (route.routes[0].steps[section - 1].distance);
         } else {
-            console.log(section)
+            var distanceToStep = (route.routes[0].steps[0].distance);
         }
+
+        // Flash direction when user is 90% through current step
+        if(((distanceToStep - distance) / distanceToStep) * 100 > 90){
+            $('.alert-box .action').addClass('flash');
+        } else {
+            $('.alert-box .action').removeClass('flash');
+        }
+
+        if (distance < 50) {
+            section++
+            followUserAndRoute(route)
+        }
+
+        $('.progress').attr('width', Math.round(((distanceToStep - distance) / distanceToStep) * 100) + '%');
     }
 
-    function showDirectionAlert(text) {
-        $('.alert-box .action').html(text);
+    function showDirectionAlert(distance, maneuver) {
+        $('.alert-box .action .distance').html('In ' + Math.round(distance) + ' meters, ');
+        $('.alert-box .action .maneuver').html(maneuver);
         $('.alert-box').slideDown();
     }
 
     function checkUserComparedToRoute(route) {
-
         var minDistance = [];
         for (var i = 0; i < route.routes[0].geometry.coordinates.length - 1; i++) {
             if ((i + 2)) {
@@ -163,17 +170,17 @@ $(function () {
                 minDistance.push(userDistance);
             }
         }
-        if (getMaxOfArray(minDistance) > 200) {
-            console.log('Recalculating');
+        if (getMinArray(minDistance) > 120) {
             getDirections(locationMarker.getLayers()[0].getLatLng().lng, locationMarker.getLayers()[0].getLatLng().lat, lastPressed.latlng.lng, lastPressed.latlng.lat, false);
             $('body').append('<iframe src="https://translate.google.com/translate_tts?ie=utf-8&tl=en&q=Recalculating" frameborder="0" style="display:none"></iframe>');
             section = 0;
+            console.log('Recalculating');
         } else {
             console.log('User is within 200 meters of route')
         }
     }
 
-    function getMaxOfArray(numArray) {
+    function getMinArray(numArray) {
         return Math.min.apply(null, numArray);
     }
 

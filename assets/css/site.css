@@ -12,13 +12,12 @@ body {
     position: absolute;
     z-index: 1001;
     right: 10px;
-    top:10px;
+    top:142px;
     display: none;
 }
 #map .icon.x {
-	top:60px;
+    top:194px;
 }
-
 .route {
     position: fixed;
     height: 100%;
@@ -32,13 +31,33 @@ body {
     width: 100%;
     border-top: 1px solid rgba(53, 53, 53, 0.31);
 }
-.alert-box{
-	position: absolute;
-	z-index: 1000;
-	width: 100%;
-	display: none;
+.alert-box {
+    position: absolute;
+    z-index: 1000;
+    width: 100%;
+    display: none;
 }
-
+.progress-limiter {
+    padding:1px 0;
+    margin: 0 auto 20px;
+    width: 50%;
+    background: #eee;
+    border-bottom: none;
+    border-radius: 4px;
+}
+.progress {
+    background: #28353d!important;
+    height: 20px;
+    border-radius: 4px;
+    padding: 10px 0;
+    margin: 4px 5px;
+}
+.progress {
+    -webkit-transition: all .5s ease-in-out;
+    -moz-transition: all .5s ease-in-out;
+    -o-transition: all .5s ease-in-out;
+    transition: all .5s ease-in-out;
+}
 .location-icon {
     background-color: #56b881;
     border-radius: 30px;
@@ -47,6 +66,20 @@ body {
     -webkit-animation: dotPulse 2000ms 0ms infinite;
     border: 4px solid white;
 }
+.flash {
+    animation: flash 1000ms 0ms infinite;
+    -moz-animation: flash 1000ms 0ms infinite;
+    -webkit-animation: flash 1000ms 0ms infinite;
+}
+
+@-webkit-keyframes flash {
+    0% {
+        opacity: 0;
+    }
+    100% {
+        opacity: 100%;
+    }
+}
 @-webkit-keyframes dotPulse {
     0% {
         box-shadow:white 0px 0px 10px 2px, rgba(103, 184, 103, 1) 0px 0px 10px -5px;
@@ -54,4 +87,10 @@ body {
     100% {
         box-shadow:white 0px 0px 10px 0px, rgba(103, 184, 103, 0) 0px 0px 0px 35px;
     }
+}
+
+@media only screen and (max-width:640px) {
+    /*.progress-limiter {
+        width: 98%;
+    }*/
 }

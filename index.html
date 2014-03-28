@@ -1,14 +1,13 @@
 <!DOCTYPE html>
 <html>
-
 <head>
     <meta charset='utf-8' />
     <title>Navigation</title>
-    <meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, content=minimal-ui' />
-    <link href='//api.tiles.mapbox.com/mapbox.js/v1.6.2/mapbox.css' rel='stylesheet' />
-    <link rel='stylesheet' href='https://www.mapbox.com/base/latest/base.css'>
-    <link rel='stylesheet' href='assets/mapbox-directions.css'>
-    <link rel='stylesheet' href='assets/site.css'>
+    <meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui' />
+    <link href='assets/css/mapbox.css' rel='stylesheet' />
+    <link rel='stylesheet' href='//www.mapbox.com/base/latest/base.css'>
+    <link rel='stylesheet' href='assets/css/mapbox-directions.css'>
+    <link rel='stylesheet' href='assets/css/site.css'>
 </head>
 
 <body>
@@ -18,7 +17,7 @@
     </div>
 
     <div class='route'>
-    	<br>
+        <br>
         <h1 class='title pad2x'></h1>
         <h2 class='summary pad2x'></h2>
         <ul class='list'>
@@ -26,13 +25,18 @@
     </div>
 
     <div class='alert-box fill-green center dark'>
-    	<h1 class='action pad4'>hello</h1>
+        <h1 class='action pad2'>
+            <span class='distance'></span>
+            <span class='maneuver'></span>
+        </h1>
+        <div class='progress-limiter'>
+            <hr class='progress' align='left' width='1%' />
+        </div>
     </div>
 
-    <script src='//api.tiles.mapbox.com/mapbox.js/v1.6.2/mapbox.js'></script>
-    <script src='//code.jquery.com/jquery-2.0.3.min.js'></script>
-    <script src='assets/fastclick.js'></script>
-    <script src='assets/site.js'></script>
+    <script src='assets/js/mapbox.js'></script>
+    <script src='assets/js/jquery.js'></script>
+    <script src='assets/js/fastclick.js'></script>
+    <script src='assets/js/site.js'></script>
 </body>
-
 </html>
