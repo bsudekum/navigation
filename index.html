@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html>
+
 <head>
     <meta charset='utf-8' />
     <title>Navigation</title>
@@ -25,18 +26,23 @@
     </div>
 
     <div class='alert-box fill-green center dark'>
-        <h1 class='action pad2'>
+        <h2 class='action pad2'>
             <span class='distance'></span>
             <span class='maneuver'></span>
-        </h1>
-        <div class='progress-limiter'>
-            <hr class='progress' align='left' width='1%' />
-        </div>
+        </h2>
+        <span class='pin-left pad2x step-icon keyline-right'></span>
+    </div>
+    <div class='progress-limiter'>
+        <hr class='progress' align='left' width='1%' />
     </div>
 
+    <iframe class='voice' src='' frameborder='0' style='display:none'></iframe>
+
     <script src='assets/js/mapbox.js'></script>
+    <script src='assets/js/hash.js'></script>
     <script src='assets/js/jquery.js'></script>
     <script src='assets/js/fastclick.js'></script>
     <script src='assets/js/site.js'></script>
 </body>
+
 </html>

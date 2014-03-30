@@ -6,7 +6,7 @@ $(function () {
     $('.toggle').click(function (e) {
         e.preventDefault();
         $('.route').fadeToggle();
-        $('.alert-box').slideToggle();
+        $('.alert-box, .progress-limiter').slideToggle();
     });
 
     $('.stop').click(function (e) {
@@ -14,7 +14,7 @@ $(function () {
         route.clearLayers(map);
         circleMarkers.clearLayers(map);
         currentRoute = null;
-        $('.alert-box').slideUp();
+        $('.alert-box, .progress-limiter').slideUp();
         $('.stop, .toggle, .route').fadeOut();
     });
 
@@ -24,14 +24,26 @@ $(function () {
         }
     });
 
+    new L.hash(map);
+
     var route = L.layerGroup();
     var locationMarker = L.layerGroup();
     var circleMarkers = L.layerGroup();
     var lastPressed;
     var currentRoute;
     var section = 0;
+    var saySomethingOnce = 0;
+    var heading = 30;
 
     map.on('locationfound', function (e) {
+        if(e.heading){
+            heading = e.heading;
+            console.log(heading)
+        } else {
+            heading = Math.floor(Math.random() * 360) + 1
+            console.log(heading)
+        }
+
         locationMarker.clearLayers(map);
 
         var icon = L.divIcon({
@@ -58,7 +70,8 @@ $(function () {
     map.locate({
         maxZoom: 19,
         enableHighAccuracy: true,
-        watch: true
+        watch: true,
+        setVeiw: false
     });
 
     map.on('contextmenu', function (e) {
@@ -85,7 +98,11 @@ $(function () {
                 $('.toggle, .stop').fadeIn();
 
                 for (var i = 0; i < e.routes[0].steps.length; i++) {
-                    L.circle([e.routes[0].steps[i].maneuver.location.coordinates[1], e.routes[0].steps[i].maneuver.location.coordinates[0]], 51).addTo(circleMarkers);
+                    L.circle([e.routes[0].steps[i].maneuver.location.coordinates[1], e.routes[0].steps[i].maneuver.location.coordinates[0]], 51, {
+                        color: '#3c4e5a',
+                        fill: false,
+                        weight: 2
+                    }).addTo(circleMarkers);
 
                     if (e.routes[0].steps[i].maneuver.type.split(' ')[1]) {
                         var icon = e.routes[0].steps[i].maneuver.type.split(' ')[1];
@@ -102,9 +119,17 @@ $(function () {
 
                     $('.route .list').append(instruct);
                 }
+
+                if (e.routes[0].steps[section].maneuver.type.split(' ')[1]) {
+                    var stepIcon = e.routes[0].steps[section].maneuver.type.split(' ')[1];
+                } else {
+                    var stepIcon = e.routes[0].steps[section].maneuver.type;
+                }
+
                 map.addLayer(circleMarkers);
                 $('.route .title').append(summary);
                 $('.route .summary').append(duration);
+                $('.step-icon').html('<span class="mapbox-directions-icon mapbox-turn-' + stepIcon + '-icon"></span>');
 
                 for (var i = 0; i < e.routes[0].geometry.coordinates.length; i++) {
                     line.push([e.routes[0].geometry.coordinates[i][1], e.routes[0].geometry.coordinates[i][0]]);
@@ -129,20 +154,24 @@ $(function () {
     }
 
     function followUserAndRoute(route) {
-        console.log(route)
 
-        var from = L.latLng(route.routes[0].steps[section].maneuver.location.coordinates[1], route.routes[0].steps[section].maneuver.location.coordinates[0]);
-        var distance = from.distanceTo(locationMarker.getLayers()[0].getLatLng());
+        // console.log(locationMarker.getLayers()[0]._icon.style.WebkitTransform = this._icon.style.WebkitTransform + ' rotate(' + this.options.iconAngle + 'deg)';)
+        var currentCSS = locationMarker.getLayers()[0]._icon.style.WebkitTransform;
+        locationMarker.getLayers()[0]._icon.style.WebkitTransform = locationMarker.getLayers()[0]._icon.style.WebkitTransform + ' rotate(' + heading + 'deg)';
+
+        var userLocation = locationMarker.getLayers()[0].getLatLng();
+        var distance = dotToDotDistance(L.latLng(route.routes[0].steps[section].maneuver.location.coordinates[1], route.routes[0].steps[section].maneuver.location.coordinates[0]), userLocation);
+        
         showDirectionAlert((distance), route.routes[0].steps[section].maneuver.instruction);
 
-        if(section > 0){
+        if (section > 0) {
             var distanceToStep = (route.routes[0].steps[section - 1].distance);
         } else {
             var distanceToStep = (route.routes[0].steps[0].distance);
         }
 
         // Flash direction when user is 90% through current step
-        if(((distanceToStep - distance) / distanceToStep) * 100 > 90){
+        if (((distanceToStep - distance) / distanceToStep) * 100 > 90) {
             $('.alert-box .action').addClass('flash');
         } else {
             $('.alert-box .action').removeClass('flash');
@@ -150,16 +179,48 @@ $(function () {
 
         if (distance < 50) {
             section++
+            saySomethingOnce = 0;
             followUserAndRoute(route)
+        } else {
+            checkIfUserIsInOtherCircle(route, userLocation); //If not within 50 meters of desired circle, double check if they are within another circle
         }
 
-        $('.progress').attr('width', Math.round(((distanceToStep - distance) / distanceToStep) * 100) + '%');
+        if (route.routes[0].steps[section].maneuver.type.split(' ')[1]) {
+            var stepIcon = route.routes[0].steps[section].maneuver.type.split(' ')[1];
+        } else {
+            var stepIcon = route.routes[0].steps[section].maneuver.type;
+        }
+
+        $('.step-icon').html('<span class="mapbox-directions-icon mapbox-turn-' + stepIcon + '-icon"></span>');
+        $('.progress').attr('width', Math.abs(Math.round(((distanceToStep - distance) / distanceToStep) * 100)) + '%');
+
+        //Only say instructions once
+        if (saySomethingOnce == 0) {
+            saySomething(encodeURIComponent('In ' + Math.round(distance) + ' meters, ' + route.routes[0].steps[section].maneuver.instruction));
+            saySomethingOnce++;
+        }
     }
 
     function showDirectionAlert(distance, maneuver) {
         $('.alert-box .action .distance').html('In ' + Math.round(distance) + ' meters, ');
         $('.alert-box .action .maneuver').html(maneuver);
-        $('.alert-box').slideDown();
+        $('.alert-box, .progress-limiter').slideDown();
+    }
+
+    function saySomething(text) {
+        $('.voice').attr('src', 'https://translate.google.com/translate_tts?ie=utf-8&tl=en&q=' + text)
+    }
+
+    function checkIfUserIsInOtherCircle(route, user) {
+        var i = 0;
+        circleMarkers.eachLayer(function (layer) {
+            i++
+            layer.bindPopup('Hello');
+            var distance = dotToDotDistance(layer.getLatLng(), user);
+            if (distance < 50) {
+                section = i; // Update current section to current circle
+            }
+        });
     }
 
     function checkUserComparedToRoute(route) {
@@ -185,17 +246,17 @@ $(function () {
     }
 
     /*
-	@param {number} x point's x coord
-	 * @param {number} y point's y coord
-	 * @param {number} x0 x coord of the line's A point
-	 * @param {number} y0 y coord of the line's A point
-	 * @param {number} x1 x coord of the line's B point
-	 * @param {number} y1 y coord of the line's B point
-	 * @param {boolean} overLine specifies if the distance should respect the limits
-	 * of the segment (overLine = true) or if it should consider the segment as an
-	 * infinite line (overLine = false), if false returns the distance from the point to
-	 * the line, otherwise the distance from the point to the segment.
-	 */
+    @param {number} x point's x coord
+     * @param {number} y point's y coord
+     * @param {number} x0 x coord of the line's A point
+     * @param {number} y0 y coord of the line's A point
+     * @param {number} x1 x coord of the line's B point
+     * @param {number} y1 y coord of the line's B point
+     * @param {boolean} overLine specifies if the distance should respect the limits
+     * of the segment (overLine = true) or if it should consider the segment as an
+     * infinite line (overLine = false), if false returns the distance from the point to
+     * the line, otherwise the distance from the point to the segment.
+     */
 
     function dotLineDistance(x, y, x0, y0, x1, y1, o) {
         function lineLength(x, y, x0, y0) {
@@ -226,5 +287,9 @@ $(function () {
             return Math.abs(a * x + b * y + c) / Math.sqrt(a * a + b * b);
         }
     };
+
+    function dotToDotDistance(point1, point2) {
+        return point1.distanceTo(point2);;
+    }
 
 });

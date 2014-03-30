@@ -11,12 +11,12 @@ body {
 #map .icon.menu, #map .icon.x {
     position: absolute;
     z-index: 1001;
-    right: 10px;
-    top:142px;
+    left: 10px;
+    bottom:10px;
     display: none;
 }
 #map .icon.x {
-    top:194px;
+    bottom:60px;
 }
 .route {
     position: fixed;
@@ -32,25 +32,21 @@ body {
     border-top: 1px solid rgba(53, 53, 53, 0.31);
 }
 .alert-box {
-    position: absolute;
+    position: relative;
     z-index: 1000;
     width: 100%;
     display: none;
 }
 .progress-limiter {
-    padding:1px 0;
     margin: 0 auto 20px;
-    width: 50%;
+    width: 100%;
     background: #eee;
-    border-bottom: none;
-    border-radius: 4px;
+    position: relative;
+    display: none;
 }
 .progress {
-    background: #28353d!important;
-    height: 20px;
-    border-radius: 4px;
-    padding: 10px 0;
-    margin: 4px 5px;
+    background: #8a8acb!important;
+    height: 10px;
 }
 .progress {
     -webkit-transition: all .5s ease-in-out;
@@ -64,15 +60,37 @@ body {
     animation: dotPulse 2000ms 0ms infinite;
     -moz-animation: dotPulse 2000ms 0ms infinite;
     -webkit-animation: dotPulse 2000ms 0ms infinite;
-    border: 4px solid white;
+    border: 3px solid white;
+}
+.location-icon:after {
+    content:'';
+    width: 0px;
+    height: 0px;
+    border-left: 6px solid transparent;
+    border-right: 6px solid transparent;
+    border-bottom: 13px solid #56b881;
+    border-radius: 3px;
+    position: relative;
+    left:3px;
+    bottom:35px;
+    -webkit-transform: rotate(125deg);
 }
 .flash {
     animation: flash 1000ms 0ms infinite;
     -moz-animation: flash 1000ms 0ms infinite;
     -webkit-animation: flash 1000ms 0ms infinite;
 }
-
-@-webkit-keyframes flash {
+.leaflet-marker-icon {
+    -webkit-transition: all 1s ease;
+    transition: all 1s ease;
+}
+.step-icon span {
+    margin-top: 150%;
+}
+/*#voice {
+    display: none;
+}*/
+ @-webkit-keyframes flash {
     0% {
         opacity: 0;
     }
@@ -88,7 +106,6 @@ body {
         box-shadow:white 0px 0px 10px 0px, rgba(103, 184, 103, 0) 0px 0px 0px 35px;
     }
 }
-
 @media only screen and (max-width:640px) {
     /*.progress-limiter {
         width: 98%;
