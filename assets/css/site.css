@@ -27,6 +27,10 @@ body {
     display: none;
     overflow-y:scroll;
 }
+.action {
+    width: 85%;
+    margin: 0 auto;
+}
 .route .list li {
     width: 100%;
     border-top: 1px solid rgba(53, 53, 53, 0.31);
@@ -74,6 +78,10 @@ body {
     left:3px;
     bottom:35px;
     -webkit-transform: rotate(125deg);
+}
+.location-icon.no-after:after{
+    content:'';
+    border:none!important;
 }
 .flash {
     animation: flash 1000ms 0ms infinite;

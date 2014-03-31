@@ -13,6 +13,7 @@ $(function () {
         e.preventDefault();
         route.clearLayers(map);
         circleMarkers.clearLayers(map);
+        endMarker.clearLayers(map);
         currentRoute = null;
         $('.alert-box, .progress-limiter').slideUp();
         $('.stop, .toggle, .route').fadeOut();
@@ -21,7 +22,8 @@ $(function () {
     var map = L.mapbox.map('map', 'aj.n6sl9ilg', {
         tileLayer: {
             detectRetina: true
-        }
+        },
+        zoomControl: false
     });
 
     new L.hash(map);
@@ -29,21 +31,16 @@ $(function () {
     var route = L.layerGroup();
     var locationMarker = L.layerGroup();
     var circleMarkers = L.layerGroup();
+    var endMarker = L.layerGroup();
     var lastPressed;
     var currentRoute;
     var section = 0;
     var saySomethingOnce = 0;
-    var heading = 30;
+    var heading = 0;
+    var reRouteDistance = 120;
+    var madeToNextStepDistance = 50;
 
     map.on('locationfound', function (e) {
-        if(e.heading){
-            heading = e.heading;
-            console.log(heading)
-        } else {
-            heading = Math.floor(Math.random() * 360) + 1
-            console.log(heading)
-        }
-
         locationMarker.clearLayers(map);
 
         var icon = L.divIcon({
@@ -60,6 +57,11 @@ $(function () {
         if (lastPressed && currentRoute) {
             checkUserComparedToRoute(currentRoute);
             followUserAndRoute(currentRoute);
+        }
+        if (e.heading) {
+            heading = e.heading;
+        } else {
+            $('.location-icon').addClass('no-after');
         }
     });
 
@@ -90,6 +92,7 @@ $(function () {
 
                 route.clearLayers(map);
                 circleMarkers.clearLayers(map);
+                endMarker.clearLayers(map);
                 var line = [];
                 currentRoute = e;
                 var summary = e.routes[0].summary;
@@ -100,9 +103,10 @@ $(function () {
                 for (var i = 0; i < e.routes[0].steps.length; i++) {
                     L.circle([e.routes[0].steps[i].maneuver.location.coordinates[1], e.routes[0].steps[i].maneuver.location.coordinates[0]], 51, {
                         color: '#3c4e5a',
-                        fill: false,
+                        // fill: false,
                         weight: 2
-                    }).addTo(circleMarkers);
+                    }).bindPopup('<div>Step: '+ i + '</div><div>Instruction: ' + e.routes[0].steps[i].maneuver.instruction + '</div>')
+                    .addTo(circleMarkers);
 
                     if (e.routes[0].steps[i].maneuver.type.split(' ')[1]) {
                         var icon = e.routes[0].steps[i].maneuver.type.split(' ')[1];
@@ -120,6 +124,18 @@ $(function () {
                     $('.route .list').append(instruct);
                 }
 
+                L.marker([e.routes[0].steps[e.routes[0].steps.length - 1].maneuver.location.coordinates[1], e.routes[0].steps[e.routes[0].steps.length - 1].maneuver.location.coordinates[0]], {
+                    icon: L.mapbox.marker.icon({
+                        'marker-size': 'small',
+                        'marker-color': 'CB8A92'
+                    }),
+                    draggable: true,
+                    riseOnHover: true
+                }).addTo(endMarker).on('dragend', function (e) {
+                    console.log(e)
+                    getDirections(locationMarker.getLayers()[0].getLatLng().lng, locationMarker.getLayers()[0].getLatLng().lat, e.target.getLatLng().lng, e.target.getLatLng().lat, false);
+                });;
+
                 if (e.routes[0].steps[section].maneuver.type.split(' ')[1]) {
                     var stepIcon = e.routes[0].steps[section].maneuver.type.split(' ')[1];
                 } else {
@@ -127,6 +143,8 @@ $(function () {
                 }
 
                 map.addLayer(circleMarkers);
+                map.addLayer(endMarker);
+
                 $('.route .title').append(summary);
                 $('.route .summary').append(duration);
                 $('.step-icon').html('<span class="mapbox-directions-icon mapbox-turn-' + stepIcon + '-icon"></span>');
@@ -136,7 +154,7 @@ $(function () {
                     if (e.routes[0].geometry.coordinates.length - 1 == i) {
                         var polyline_options = {
                             color: '#3887BE',
-                            weight: 9,
+                            weight: 8,
                             opacity: .70
                         };
                         var polyline = L.polyline(line, polyline_options).addTo(route);
@@ -144,7 +162,7 @@ $(function () {
 
                         if (showMapView == true) {
                             map.fitBounds(line, {
-                                padding: [200, 100]
+                                padding: [10, 10]
                             });
                         }
                     }
@@ -161,7 +179,7 @@ $(function () {
 
         var userLocation = locationMarker.getLayers()[0].getLatLng();
         var distance = dotToDotDistance(L.latLng(route.routes[0].steps[section].maneuver.location.coordinates[1], route.routes[0].steps[section].maneuver.location.coordinates[0]), userLocation);
-        
+
         showDirectionAlert((distance), route.routes[0].steps[section].maneuver.instruction);
 
         if (section > 0) {
@@ -177,7 +195,7 @@ $(function () {
             $('.alert-box .action').removeClass('flash');
         }
 
-        if (distance < 50) {
+        if (distance < madeToNextStepDistance) {
             section++
             saySomethingOnce = 0;
             followUserAndRoute(route)
@@ -215,9 +233,8 @@ $(function () {
         var i = 0;
         circleMarkers.eachLayer(function (layer) {
             i++
-            layer.bindPopup('Hello');
             var distance = dotToDotDistance(layer.getLatLng(), user);
-            if (distance < 50) {
+            if (distance < madeToNextStepDistance) {
                 section = i; // Update current section to current circle
             }
         });
@@ -231,13 +248,15 @@ $(function () {
                 minDistance.push(userDistance);
             }
         }
-        if (getMinArray(minDistance) > 120) {
-            getDirections(locationMarker.getLayers()[0].getLatLng().lng, locationMarker.getLayers()[0].getLatLng().lat, lastPressed.latlng.lng, lastPressed.latlng.lat, false);
-            $('body').append('<iframe src="https://translate.google.com/translate_tts?ie=utf-8&tl=en&q=Recalculating" frameborder="0" style="display:none"></iframe>');
-            section = 0;
+
+        // Check if the user is within x meters of any segment on route
+        if (getMinArray(minDistance) > reRouteDistance) {
             console.log('Recalculating');
+            getDirections(locationMarker.getLayers()[0].getLatLng().lng, locationMarker.getLayers()[0].getLatLng().lat, lastPressed.latlng.lng, lastPressed.latlng.lat, false);
+            $('.voice').attr('src', 'https://translate.google.com/translate_tts?ie=utf-8&tl=en&q=Recalculating')
+            section = 0;
         } else {
-            console.log('User is within 200 meters of route')
+            console.log('User is within' + reRouteDistance + 'meters of route')
         }
     }
 
