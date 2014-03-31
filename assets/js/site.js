@@ -29,7 +29,7 @@ $(function () {
         $('.stop, .toggle, .route, .animate').fadeOut();
     });
 
-    var map = L.mapbox.map('map', 'aj.n6sl9ilg', {
+    var map = L.mapbox.map('map', 'bobbysud.map-8owxxni8', {
         tileLayer: {
             detectRetina: true
         },
@@ -121,7 +121,7 @@ $(function () {
         $.ajax({
             type: 'GET',
             dataType: 'json',
-            url: 'https://api.tiles.mapbox.com/v3/willwhite.map-65rb3vvx/directions/driving/' + startLng + ',' + startLat + ';' + finishLng + ',' + finishLat + '.json?instrucstions=html',
+            url: 'https://api.tiles.mapbox.com/v3/bobbysud.map-8owxxni8/directions/driving/' + startLng + ',' + startLat + ';' + finishLng + ',' + finishLat + '.json?instrucstions=html',
             success: function (e) {
 
                 if (e.error) alert(e.error);
@@ -211,7 +211,7 @@ $(function () {
     }
 
     function followUserAndRoute(route) {
-        
+
         var currentCSS = locationMarker.getLayers()[0]._icon.style.WebkitTransform;
         locationMarker.getLayers()[0]._icon.style.WebkitTransform = locationMarker.getLayers()[0]._icon.style.WebkitTransform + ' rotate(' + heading + 'deg)';
 
