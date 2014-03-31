@@ -82,6 +82,7 @@ $(function () {
     });
 
     function getDirections(startLng, startLat, finishLng, finishLat, showMapView) {
+        saySomethingOnce = 0;
         $.ajax({
             type: 'GET',
             dataType: 'json',
@@ -103,8 +104,7 @@ $(function () {
                 for (var i = 0; i < e.routes[0].steps.length; i++) {
                     L.circle([e.routes[0].steps[i].maneuver.location.coordinates[1], e.routes[0].steps[i].maneuver.location.coordinates[0]], 51, {
                         color: '#3c4e5a',
-                        // fill: false,
-                        weight: 2
+                        weight: 1
                     }).bindPopup('<div>Step: '+ i + '</div><div>Instruction: ' + e.routes[0].steps[i].maneuver.instruction + '</div>')
                     .addTo(circleMarkers);
 
@@ -226,7 +226,8 @@ $(function () {
     }
 
     function saySomething(text) {
-        $('.voice').attr('src', 'https://translate.google.com/translate_tts?ie=utf-8&tl=en&q=' + text)
+        $('.voice').empty();
+        $('.voice').append("<iframe class='voice' src='https://translate.google.com/translate_tts?ie=utf-8&tl=en&q=" + text +"' frameborder='0' style='display:none'></iframe>")
     }
 
     function checkIfUserIsInOtherCircle(route, user) {
@@ -251,7 +252,6 @@ $(function () {
 
         // Check if the user is within x meters of any segment on route
         if (getMinArray(minDistance) > reRouteDistance) {
-            console.log('Recalculating');
             getDirections(locationMarker.getLayers()[0].getLatLng().lng, locationMarker.getLayers()[0].getLatLng().lat, lastPressed.latlng.lng, lastPressed.latlng.lat, false);
             $('.voice').attr('src', 'https://translate.google.com/translate_tts?ie=utf-8&tl=en&q=Recalculating')
             section = 0;
