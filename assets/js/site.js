@@ -88,7 +88,7 @@ $(function () {
         maxZoom: 19,
         enableHighAccuracy: true,
         watch: true,
-        setVeiw: false
+        setVeiw: true
     });
 
     map.on('contextmenu', function (e) {
