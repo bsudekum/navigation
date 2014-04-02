@@ -9,13 +9,13 @@ $(function () {
         $('.alert-box, .progress-limiter').slideToggle();
     });
 
-    $('.popup .close').click(function(e){
+    $('.popup .close').click(function (e) {
         e.preventDefault();
         $('.popup').fadeOut();
-        localStorage.setItem('seenPopup','true');
+        localStorage.setItem('seenPopup', 'true');
     });
 
-    if(localStorage.getItem('seenPopup')){
+    if (localStorage.getItem('seenPopup')) {
         $('.popup').hide();
     }
 
@@ -58,6 +58,8 @@ $(function () {
             iconSize: [25, 25]
         });
 
+        map.panTo(e.latlng);
+
         L.marker(e.latlng, {
             icon: icon,
             clickable: true,
@@ -85,10 +87,10 @@ $(function () {
     });
 
     map.locate({
-        maxZoom: 19,
+        setView: true,
+        maxZoom: 16,
         enableHighAccuracy: true,
-        watch: true,
-        setVeiw: true
+        watch: true
     });
 
     map.on('contextmenu', function (e) {
